@@ -1,0 +1,1199 @@
+<!--
+  Hack & Code : voyage au cœur des ordinateurs
+  Exposé de Maxence (CM2 B) — page web statique autonome.
+  100% HTML/CSS/JS vanilla, aucune dépendance sauf Google Fonts (avec repli système).
+  Navigation par "étapes" : certaines diapos ont des sous-étapes (démo de hacking, quiz).
+-->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<title>Hack &amp; Code — un exposé de Maxence</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=VT323&display=swap"
+  rel="stylesheet"
+/>
+
+<style>
+  /* ============================================================
+     1. THÈME — custom properties (faciles à modifier ici)
+     ============================================================ */
+  :root {
+    /* Palette claire, pastel chaleureuse */
+    --bg: #fbf4e9;
+    --bg-2: #f3e6d2;
+    --surface: #fffdf8;
+    --surface-2: #fcf1e0;
+    --text: #463a33;
+    --text-soft: #7c6a5d;
+    --primary: #e07a5f;       /* terracotta / corail */
+    --primary-soft: #f6cfc1;
+    --secondary: #5aa899;     /* vert d'eau */
+    --secondary-soft: #c3e3db;
+    --accent: #e3a72f;        /* jaune miel */
+    --accent-soft: #f7e3ac;
+    --ink: #463a33;           /* trait des "sketchs" */
+    --shadow: 28px 28px 0 -18px rgba(70, 58, 51, .14);
+    --ring: rgba(70, 58, 51, .14);
+
+    /* Terminal "hacker" : toujours vert sur noir, quel que soit le thème */
+    --term-bg: #06120b;
+    --term-green: #4dff86;
+    --term-dim: #2f8c52;
+    --term-warn: #ffd24d;
+    --term-danger: #ff5d5d;
+
+    /* Polices (ludique pour les titres, lisible pour le texte, pixel pour le rétro) */
+    --font-title: "Fredoka", "Trebuchet MS", system-ui, sans-serif;
+    --font-body: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "VT323", "Courier New", ui-monospace, monospace;
+
+    --radius: 18px;
+  }
+
+  /* Mode sombre par défaut système… */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #241d1b;
+      --bg-2: #2e2421;
+      --surface: #322823;
+      --surface-2: #3c2f29;
+      --text: #f4ebe2;
+      --text-soft: #c8b8aa;
+      --primary: #f0906f;
+      --primary-soft: #5a352b;
+      --secondary: #74c6b6;
+      --secondary-soft: #2a443d;
+      --accent: #f0c45f;
+      --accent-soft: #4b3d1f;
+      --ink: #f4ebe2;
+      --shadow: 28px 28px 0 -18px rgba(0, 0, 0, .35);
+      --ring: rgba(255, 255, 255, .12);
+    }
+  }
+  /* …mais l'utilisateur peut forcer un mode avec le bouton. */
+  :root[data-theme="light"] {
+    --bg: #fbf4e9; --bg-2: #f3e6d2; --surface: #fffdf8; --surface-2: #fcf1e0;
+    --text: #463a33; --text-soft: #7c6a5d; --primary: #e07a5f; --primary-soft: #f6cfc1;
+    --secondary: #5aa899; --secondary-soft: #c3e3db; --accent: #e3a72f; --accent-soft: #f7e3ac;
+    --ink: #463a33; --shadow: 28px 28px 0 -18px rgba(70, 58, 51, .14); --ring: rgba(70, 58, 51, .14);
+  }
+  :root[data-theme="dark"] {
+    --bg: #241d1b; --bg-2: #2e2421; --surface: #322823; --surface-2: #3c2f29;
+    --text: #f4ebe2; --text-soft: #c8b8aa; --primary: #f0906f; --primary-soft: #5a352b;
+    --secondary: #74c6b6; --secondary-soft: #2a443d; --accent: #f0c45f; --accent-soft: #4b3d1f;
+    --ink: #f4ebe2; --shadow: 28px 28px 0 -18px rgba(0, 0, 0, .35); --ring: rgba(255, 255, 255, .12);
+  }
+
+  /* ============================================================
+     2. BASE
+     ============================================================ */
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  /* Taille de base FLUIDE : tout le deck est exprimé en rem/em, donc régler la
+     taille de la racine met à l'échelle l'ensemble (texte, marges, encarts, gaps)
+     d'un seul geste, sans toucher chaque règle.
+     - plancher 16px : petits écrans / mobiles restent EXACTEMENT comme avant ;
+     - on grandit jusqu'à 21px pour exploiter les grands écrans ;
+     - indexé sur vmin (≈ la hauteur, en paysage) plutôt que vw : ainsi les diapos
+       les plus denses tiennent toujours en hauteur, même sur écran large mais bas. */
+  html { font-size: clamp(16px, 10px + 1.15vmin, 26px); }
+  body {
+    font-family: var(--font-body);
+    /* Texte courant (paragraphes, listes, puces) un poil plus grand que la base :
+       seuls les éléments SANS taille explicite héritent de ce 1.06rem. Les titres,
+       chapôs, stats… ont leur propre taille et ne bougent donc pas. */
+    font-size: 1.06rem;
+    color: var(--text);
+    background:
+      radial-gradient(120% 120% at 15% 0%, var(--bg-2) 0%, var(--bg) 55%);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    text-wrap: pretty; /* hérité : évite le mot orphelin en fin de paragraphe (ignoré si non supporté) */
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  }
+
+  /* ============================================================
+     3. DECK & DIAPOS
+     ============================================================ */
+  #deck { position: fixed; inset: 0; }
+
+  .slide {
+    position: absolute; inset: 0;
+    display: grid; place-items: safe center; /* "safe" : si le contenu dépasse, on aligne en haut au lieu de rogner */
+    padding: clamp(3.5rem, 7vh, 5rem) clamp(1rem, 4vw, 3rem) clamp(3rem, 6vh, 4rem);
+    opacity: 0; visibility: hidden;
+    transform: translateY(14px) scale(.99);
+    transition: opacity .45s ease, transform .5s ease, visibility .45s;
+    overflow-y: auto;
+  }
+  .slide.is-active { opacity: 1; visibility: visible; transform: none; }
+
+  /* Largeur de contenu : remplit l'essentiel des écrans courants (≈ celui-ci),
+     plafonnée pour rester lisible sur très grand moniteur / projecteur ultralarge. */
+  .slide-inner { width: min(1500px, 94vw); margin: auto; }
+
+  .kicker {
+    font-family: var(--font-title);
+    font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--primary); margin: 0 0 .35rem; font-size: clamp(.8rem, 2.2vw, 1rem);
+  }
+  .slide-title {
+    font-family: var(--font-title); font-weight: 700; line-height: 1.05;
+    margin: 0 0 1.1rem; font-size: clamp(1.8rem, 5.2vw, 3.1rem); color: var(--text);
+  }
+  .slide-title .hl { color: var(--primary); }
+  .lead { font-size: clamp(1.05rem, 2.6vw, 1.35rem); color: var(--text-soft); margin: 0 0 1rem; }
+
+  /* Titres courts : équilibre les lignes (et donc pas d'orphelin). pretty est déjà hérité pour le reste. */
+  .slide-title, .question, .logo-sub, .lead, .card h3, .callout h3, .demo-hint { text-wrap: balance; }
+
+  /* Colonne texte FLEXIBLE + colonne illustration calibrée à la taille de l'image.
+     Ainsi la largeur en plus (grand écran) va au TEXTE, pas à du vide décoratif :
+     plus de "zone blanche" à droite autour d'un petit dessin. */
+  .cols { display: grid; grid-template-columns: minmax(0, 1fr) clamp(220px, 26vw, 340px); gap: clamp(1.2rem, 4vw, 2.8rem); align-items: center; }
+  @media (max-width: 820px) { .cols { grid-template-columns: 1fr; } .col-side { order: -1; } }
+
+  /* ============================================================
+     4. COMPOSANTS "infographie / sketchnote"
+     ============================================================ */
+  .callout {
+    position: relative; background: var(--surface); border-radius: var(--radius);
+    padding: 1rem 1.15rem 1rem 1.25rem; margin: 0 0 .9rem;
+    border: 2.5px solid var(--ink); box-shadow: var(--shadow);
+  }
+  .callout::before {
+    content: ""; position: absolute; left: 0; top: 12px; bottom: 12px; width: 7px;
+    border-radius: 7px; background: var(--accent);
+  }
+  .callout.def::before { background: var(--secondary); }
+  .callout.warm::before { background: var(--primary); }
+  .callout h3 { font-family: var(--font-title); margin: 0 0 .3rem; font-size: 1.15rem; }
+  .callout p { margin: .25rem 0; line-height: 1.45; }
+  .callout .tag {
+    display: inline-block; font-family: var(--font-title); font-size: .72rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .05em; color: var(--surface);
+    background: var(--secondary); padding: .15em .6em; border-radius: 999px; margin-bottom: .4rem;
+  }
+  .callout.warm .tag { background: var(--primary); }
+
+  ul.points { list-style: none; padding: 0; margin: .4rem 0 0; }
+  ul.points li { position: relative; padding: .35rem 0 .35rem 1.8rem; line-height: 1.4; }
+  ul.points li::before {
+    content: "▸"; position: absolute; left: .4rem; top: .35rem; color: var(--primary); font-weight: 800;
+  }
+
+  /* Sticker = grosse vignette emoji avec un cercle "dessiné main" derrière */
+  .col-side { display: grid; place-items: center; }
+  /* La diapo "hacker" pose un SVG brut (les deux chapeaux) au lieu d'un .sticker :
+     on le rend fluide pour qu'il remplisse sa colonne au lieu d'y flotter. */
+  .col-side > svg { width: 100%; max-width: 320px; height: auto; }
+  .sticker { position: relative; display: grid; place-items: center; width: min(92%, 320px); aspect-ratio: 1; }
+  .sticker .emoji { font-size: clamp(3.4rem, 14vw, 8rem); line-height: 1; filter: drop-shadow(0 6px 10px rgba(0,0,0,.12)); }
+  .sticker .scribble { position: absolute; inset: -6% ; width: 112%; height: 112%; color: var(--primary); opacity: .9; }
+  .sticker .scribble path { fill: none; stroke: currentColor; stroke-width: 4; stroke-linecap: round; }
+  .sticker.alt .scribble { color: var(--secondary); }
+  .sticker .spark { position: absolute; color: var(--accent); font-size: 1.4rem; }
+  .sticker .spark.s1 { top: -2%; right: 6%; } .sticker .spark.s2 { bottom: 2%; left: 0%; } .sticker .spark.s3 { top: 30%; right: -6%; font-size: 1rem; }
+
+  /* Dataviz : gros chiffres + barres */
+  .stats { display: flex; flex-wrap: wrap; gap: .9rem; margin: .2rem 0 1rem; }
+  .stat { background: var(--surface-2); border-radius: var(--radius); padding: .7rem 1rem; border: 2.5px solid var(--ink); }
+  .stat .num { font-family: var(--font-title); font-weight: 700; font-size: clamp(1.5rem, 5vw, 2.3rem); color: var(--primary); line-height: 1; }
+  .stat .lbl { font-size: .85rem; color: var(--text-soft); margin-top: .25rem; }
+
+  .countries { display: flex; flex-wrap: wrap; gap: .55rem; margin: .3rem 0 0; }
+  .country { font-weight: 800; background: var(--surface-2); border: 2.5px solid var(--ink); border-radius: 999px; padding: .35rem .85rem; box-shadow: var(--shadow); }
+
+  .chips { display: grid; gap: .7rem; }
+  .chip { background: var(--surface); border: 2.5px solid var(--ink); border-radius: var(--radius); padding: .7rem .9rem; box-shadow: var(--shadow); }
+  .chip b { font-family: var(--font-title); color: var(--primary); }
+  /* Noms de langages : police lisible (Fredoka, pas la pixel-font), texte foncé sur pastille douce -> bon contraste clair/sombre */
+  .chip .code {
+    display: inline-block; font-family: var(--font-title); font-weight: 600;
+    font-size: clamp(1.05rem, 2.6vw, 1.22rem); line-height: 1.3; color: var(--text);
+    background: var(--secondary-soft); padding: .04em .5em; border-radius: 9px;
+  }
+
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  @media (max-width: 820px) { .cards { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 2.5px solid var(--ink); border-radius: var(--radius); padding: 1rem; box-shadow: var(--shadow); }
+  .card .ic { font-size: 2.2rem; }
+  .card h3 { font-family: var(--font-title); margin: .3rem 0 .35rem; color: var(--primary); }
+  .card p { margin: 0; line-height: 1.4; font-size: .98rem; }
+
+  .fun {
+    margin-top: .8rem; font-style: italic; color: var(--text-soft);
+    display: flex; gap: .5rem; align-items: flex-start;
+  }
+  .fun::before { content: "💡"; font-style: normal; }
+
+  /* ============================================================
+     5. CHROME (étiquette section, progression, repère, thème)
+     ============================================================ */
+  .deck-tag {
+    position: fixed; top: clamp(.8rem, 2.5vh, 1.4rem); left: clamp(.9rem, 3vw, 1.8rem);
+    font-family: var(--font-title); font-weight: 600; color: var(--text-soft);
+    background: var(--surface); border: 2px solid var(--ink); border-radius: 999px;
+    padding: .3em .9em; font-size: clamp(.72rem, 2vw, .9rem); z-index: 30;
+    transition: opacity .4s;
+  }
+  .theme-toggle {
+    position: fixed; top: clamp(.8rem, 2.5vh, 1.4rem); right: clamp(.9rem, 3vw, 1.8rem);
+    width: 2.6rem; height: 2.6rem; border-radius: 50%; border: 2px solid var(--ink);
+    background: var(--surface); cursor: pointer; font-size: 1.2rem; z-index: 40;
+    display: grid; place-items: center; line-height: 1;
+  }
+  .theme-toggle:hover { transform: scale(1.06); }
+
+  .progress { position: fixed; left: 0; right: 0; bottom: 0; height: 7px; background: var(--ring); z-index: 30; transition: opacity .4s; }
+  .progress .fill { height: 100%; background: linear-gradient(90deg, var(--secondary), var(--primary), var(--accent)); transform-origin: 0 50%; transform: scaleX(0); transition: transform .45s ease; }
+
+  .nav-hint {
+    position: fixed; bottom: clamp(.7rem, 2.5vh, 1.2rem); right: clamp(.9rem, 3vw, 1.8rem);
+    font-size: .8rem; color: var(--text-soft); z-index: 30; transition: opacity .4s;
+    background: var(--surface); border: 2px solid var(--ink); border-radius: 999px; padding: .25em .8em;
+  }
+
+  body.is-cover .deck-tag, body.is-cover .progress, body.is-cover .nav-hint { opacity: 0; pointer-events: none; }
+
+  /* ============================================================
+     6. DIAPOS "COUVERTURE" (titre & fin) + barre de chargement rétro
+     ============================================================ */
+  /* La couverture reste une .slide absolute plein écran (pas de position:relative qui la ferait
+     retomber dans le flux et casserait le centrage). Le SVG de fond remplit toute la diapo. */
+  .cover { text-align: center; }
+  .cover-bg {
+    position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0;
+    color: var(--primary); opacity: .10; pointer-events: none;
+  }
+  .cover-inner { position: relative; z-index: 1; display: grid; justify-items: center; gap: .4rem; width: min(900px, 100%); }
+  .logo {
+    font-family: var(--font-title); font-weight: 700; line-height: .95;
+    font-size: clamp(2.8rem, 12vw, 6.5rem); margin: 0;
+    background: linear-gradient(120deg, var(--primary), var(--accent), var(--secondary));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .logo-sub { font-family: var(--font-title); font-weight: 500; color: var(--text); font-size: clamp(1.1rem, 4vw, 2rem); margin: 0; }
+  .presenter { color: var(--text-soft); font-size: clamp(1rem, 3vw, 1.35rem); margin: .4rem 0 1.4rem; }
+
+  .loader { width: min(420px, 80vw); background: #06120b; border: 3px solid #0e3a20; border-radius: 6px; padding: 12px 14px 14px; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+  .loader-track { height: 22px; border: 2px solid var(--term-dim); background: #02060300; padding: 2px; image-rendering: pixelated; }
+  .loader-fill {
+    height: 100%; width: 0%;
+    background: repeating-linear-gradient(90deg, var(--term-green) 0 14px, transparent 14px 18px);
+    animation: load 3s steps(22) infinite;
+  }
+  .loader--done .loader-fill { width: 100%; animation: none; }
+  .loader-text { font-family: var(--font-mono); color: var(--term-green); font-size: 1.5rem; letter-spacing: .08em; margin-top: 8px; text-align: left; }
+  .loader-text .blink { animation: blink 1.2s steps(1) infinite; }
+  @keyframes load { 0% { width: 0%; } 90%, 100% { width: 100%; } }
+  @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: .15; } }
+
+  .cover-hint { margin-top: 1.4rem; color: var(--text-soft); font-size: .95rem; }
+  .cover-hint kbd {
+    font-family: var(--font-mono); background: var(--surface); border: 2px solid var(--ink);
+    border-radius: 7px; padding: 0 .45em; font-size: 1.1em;
+  }
+
+  /* ============================================================
+     7. DÉMO HACKING — faux navigateur + terminal
+     ============================================================ */
+  .demo-inner { width: min(1080px, 100%); }
+  .demo-hint { font-family: var(--font-title); color: var(--primary); text-align: center; margin: 0 0 .7rem; font-size: clamp(.95rem, 2.6vw, 1.2rem); }
+
+  .browser { position: relative; background: var(--surface); border: 3px solid var(--ink); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); }
+  .b-bar { display: flex; align-items: center; gap: .6rem; padding: .55rem .8rem; background: var(--surface-2); border-bottom: 2px solid var(--ink); }
+  .b-dots { display: flex; gap: .35rem; }
+  .b-dots i { width: 12px; height: 12px; border-radius: 50%; display: block; }
+  .b-dots i:nth-child(1) { background: #ff5f57; } .b-dots i:nth-child(2) { background: #febc2e; } .b-dots i:nth-child(3) { background: #28c840; }
+  .b-nav { color: var(--text-soft); font-weight: 700; letter-spacing: .05em; }
+  .addr { flex: 1; display: flex; align-items: center; gap: .4rem; background: var(--surface); border: 2px solid var(--ink); border-radius: 999px; padding: .25rem .8rem; font-size: .92rem; min-width: 0; }
+  .addr .lock { color: var(--secondary); } .addr .url { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .browser.is-hacked .addr .lock { color: var(--term-danger); }
+  .browser.is-hacked .addr .url { color: var(--term-danger); text-decoration: line-through; }
+
+  .viewport { position: relative; height: clamp(280px, 52vh, 460px); overflow: hidden; }
+
+  /* Fausse page "Banque de France" (maquette stylisée, inventée) */
+  .page { position: absolute; inset: 0; background: #fff; color: #1b2b4b; overflow: hidden; }
+  .tricolore { display: flex; height: 6px; } .tricolore i { flex: 1; } .tricolore i:nth-child(1){background:#1d2c6b;} .tricolore i:nth-child(2){background:#fff;} .tricolore i:nth-child(3){background:#d32a3a;}
+  .page-head { display: flex; align-items: center; justify-content: space-between; padding: .8rem 1.2rem; border-bottom: 1px solid #e6e6ef; }
+  .page-logo { font-family: var(--font-title); font-weight: 700; color: #1d2c6b; line-height: 1; }
+  .page-logo small { display: block; font-family: var(--font-body); font-weight: 700; color: #d32a3a; font-size: .62rem; letter-spacing: .14em; }
+  .page-nav { display: flex; gap: 1rem; color: #51607f; font-weight: 700; font-size: .82rem; }
+  .page-hero { padding: 1.5rem 1.2rem; background: linear-gradient(135deg, #eef1fb, #fff); }
+  .page-hero h1 { font-family: var(--font-title); color: #1d2c6b; margin: 0 0 .4rem; font-size: 1.5rem; }
+  .page-hero p { margin: 0 0 .9rem; color: #51607f; }
+  .page-btn { display: inline-block; background: #1d2c6b; color: #fff; font-weight: 700; padding: .5rem 1rem; border-radius: 8px; }
+  .page-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7rem; padding: 1rem 1.2rem; }
+  .page-cards div { background: #f3f5fc; border: 1px solid #e0e4f4; border-radius: 10px; padding: .7rem; font-size: .8rem; color: #51607f; }
+  .page-cards b { color: #1d2c6b; display: block; margin-bottom: .25rem; }
+
+  /* Écran "piraté" (clairement faux, façon cartoon) */
+  .hacked-screen { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: .6rem; text-align: center; background: #07060a; color: var(--term-danger); font-family: var(--font-mono); padding: 1rem; animation: flicker .12s steps(2) 6; }
+  .browser.is-hacked .hacked-screen { display: flex; }
+  .hacked-screen .skull { font-size: clamp(3rem, 12vw, 5rem); }
+  .hacked-screen h2 { font-size: clamp(1.6rem, 6vw, 2.6rem); margin: 0; letter-spacing: .1em; text-shadow: 2px 2px 0 #3a0000; }
+  .hacked-screen p { margin: 0; color: var(--term-green); font-size: 1.3rem; }
+  .hacked-screen .small { color: var(--term-warn); font-size: 1.1rem; }
+  @keyframes flicker { 0% { opacity: 1; } 100% { opacity: .7; } }
+
+  /* Terminal (tiers inférieur, avec marges) */
+  .terminal {
+    position: absolute; left: 4%; right: 4%; bottom: 3%; height: 40%;
+    background: rgba(6, 18, 11, .94); border: 2px solid var(--term-dim); border-radius: 10px;
+    display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,.4);
+    opacity: 0; transform: translateY(12px); transition: opacity .35s, transform .35s;
+  }
+  .terminal.is-shown { opacity: 1; transform: none; }
+  /* Sortie "ressort" : quand la page bascule en « piraté », le faux terminal s'efface
+     en glissant vers le bas. La courbe à valeur de départ négative donne un léger élan
+     vers le haut (anticipation) avant la glissade hors-champ ; le clip de .viewport le
+     masque en bas. L'opacité ne baisse qu'en fin de course pour que le glissé reste
+     visible. Placé APRÈS .is-shown (même spécificité) pour l'emporter à cette étape. */
+  .terminal.is-leaving {
+    opacity: 0;
+    transform: translateY(120%);
+    transition: transform .6s cubic-bezier(.34, -.4, .7, 1), opacity .3s ease .25s;
+  }
+  .term-head { font-family: var(--font-mono); color: var(--term-dim); background: #04100a; padding: .15rem .7rem; font-size: 1rem; border-bottom: 1px solid var(--term-dim); }
+  .term-body {
+    flex: 1; overflow-y: auto; padding: .5rem .8rem; font-family: var(--font-mono);
+    font-size: clamp(1rem, 2.4vw, 1.35rem); line-height: 1.25; color: var(--term-green);
+    /* Scrollbar toujours sombre (indépendante du mode système) — syntaxe standard… */
+    color-scheme: dark; scrollbar-width: thin; scrollbar-color: var(--term-dim) var(--term-bg);
+  }
+  /* …et pseudo-éléments WebKit (Safari / anciens Chromium) */
+  .term-body::-webkit-scrollbar { width: 10px; height: 10px; }
+  .term-body::-webkit-scrollbar-track { background: var(--term-bg); }
+  .term-body::-webkit-scrollbar-thumb { background: var(--term-dim); border-radius: 6px; border: 2px solid var(--term-bg); }
+  .term-body::-webkit-scrollbar-thumb:hover { background: var(--term-green); }
+  .term-line { white-space: pre-wrap; word-break: break-word; }
+  .term-line.ok { color: var(--term-green); } .term-line.warn { color: var(--term-warn); } .term-line.danger { color: var(--term-danger); font-weight: 700; }
+  .term-line.typing::after { content: "▋"; animation: blink 1s steps(1) infinite; }
+
+  /* ============================================================
+     8. QUIZ — questions + compte à rebours
+     ============================================================ */
+  .quiz-inner { width: min(900px, 100%); text-align: center; }
+  .q-num { font-family: var(--font-title); color: var(--secondary); font-weight: 600; letter-spacing: .05em; margin: 0 0 .3rem; }
+  .question { font-family: var(--font-title); font-weight: 700; font-size: clamp(1.4rem, 4.5vw, 2.3rem); margin: 0 auto 1.3rem; max-width: 18ch; line-height: 1.15; }
+  .opts { list-style: none; padding: 0; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; max-width: 760px; }
+  @media (max-width: 620px) { .opts { grid-template-columns: 1fr; } }
+  .opt {
+    display: flex; align-items: center; gap: .7rem; text-align: left;
+    background: var(--surface); border: 3px solid var(--ink); border-radius: var(--radius);
+    padding: .85rem 1rem; font-size: clamp(1rem, 2.6vw, 1.2rem); font-weight: 700;
+    box-shadow: var(--shadow); transition: transform .3s, background .3s, border-color .3s, opacity .3s;
+  }
+  .opt-key { flex: none; width: 1.9rem; height: 1.9rem; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--text); font-family: var(--font-title); }
+  .opt .check { margin-left: auto; opacity: 0; font-size: 1.4rem; transition: opacity .3s; }
+
+  .show-answer .opt:not(.correct) { opacity: .4; }
+  .show-answer .opt.correct { background: var(--secondary-soft); border-color: var(--secondary); transform: scale(1.04); }
+  .show-answer .opt.correct .opt-key { background: var(--secondary); color: #fff; }
+  .show-answer .opt.correct .check { opacity: 1; }
+
+  .timer { position: relative; width: clamp(72px, 14vw, 100px); aspect-ratio: 1; margin: 0 auto 1.1rem; transition: opacity .3s; }
+  .show-answer .timer { opacity: .25; }
+  .timer-ring { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .timer-bg { fill: none; stroke: var(--ring); stroke-width: 9; }
+  .timer-fg { fill: none; stroke: var(--primary); stroke-width: 9; stroke-linecap: round; }
+  .timer-num { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-title); font-weight: 700; font-size: clamp(1.4rem, 4vw, 2rem); color: var(--text); }
+
+  .quiz-bravo { font-family: var(--font-title); color: var(--secondary); font-size: 1.2rem; margin-top: 1.1rem; opacity: 0; transition: opacity .35s .15s; }
+  .show-answer .quiz-bravo { opacity: 1; }
+</style>
+
+<!-- ================= CHROME ================= -->
+<div class="deck-tag" id="deckTag" aria-hidden="true"></div>
+<button class="theme-toggle" id="themeToggle" type="button" data-no-advance
+        aria-label="Changer le mode clair / sombre" title="Mode clair / sombre">🌞</button>
+<div class="nav-hint" aria-hidden="true">◀ ▶ ou clic · ⌘↑ début · ⌘↓ fin</div>
+<div class="progress" aria-hidden="true"><div class="fill" id="progressFill"></div></div>
+
+<!-- ================= DECK ================= -->
+<main id="deck">
+
+  <!-- 0. TITRE -->
+  <section class="slide cover" id="title" data-cover data-section="">
+      <svg class="cover-bg" viewBox="0 0 800 450" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
+        <g font-family="monospace" font-weight="700">
+          <text x="40" y="90" font-size="60" transform="rotate(-12 40 90)">&lt;/&gt;</text>
+          <text x="620" y="80" font-size="54">{ }</text>
+          <text x="120" y="320" font-size="70">01</text>
+          <text x="700" y="300" font-size="64">10</text>
+          <text x="320" y="120" font-size="40">def hack()</text>
+          <text x="500" y="400" font-size="48">🔒</text>
+          <text x="60" y="420" font-size="48">⌨</text>
+          <text x="380" y="380" font-size="46" transform="rotate(8 380 380)">if(){}</text>
+          <text x="240" y="230" font-size="40">#!/bin</text>
+        </g>
+      </svg>
+      <div class="cover-inner">
+        <h1 class="logo">Hack &amp; Code</h1>
+        <p class="logo-sub">voyage au cœur des ordinateurs</p>
+        <p class="presenter">Un exposé (stylé) de Maxence en CM2&nbsp;B</p>
+        <div class="loader" aria-hidden="true">
+          <div class="loader-track"><div class="loader-fill"></div></div>
+          <div class="loader-text">LOADING<span class="blink">...</span></div>
+        </div>
+        <p class="cover-hint">Appuie sur <kbd>→</kbd> ou clique pour commencer</p>
+      </div>
+  </section>
+
+  <!-- 1. C'EST QUOI UN HACKER -->
+  <section class="slide" id="h-def" data-section="01 · Les hackers">
+    <div class="slide-inner">
+      <p class="kicker">Les hackers</p>
+      <h2 class="slide-title">C'est quoi un <span class="hl">hacker</span> ?</h2>
+      <div class="cols">
+        <div class="col-main">
+          <div class="callout def">
+            <span class="tag">Définition</span>
+            <p>Un <b>hacker</b>, c'est une personne super forte en informatique. Elle sait se faufiler dans les ordinateurs, les sites web et les réseaux.</p>
+          </div>
+          <div class="callout">
+            <h3>Il y en a de deux sortes&nbsp;:</h3>
+            <ul class="points">
+              <li>🤍 <b>Les chapeaux blancs</b> : les gentils. Ils cherchent les failles pour mieux <b>protéger</b>.</li>
+              <li>🖤 <b>Les chapeaux noirs</b> : les méchants. Ils en profitent pour faire du mal ou voler.</li>
+            </ul>
+          </div>
+          <p class="fun">L'idée des chapeaux vient des vieux films de cowboys : les gentils portaient un chapeau blanc, les méchants un noir&nbsp;!</p>
+        </div>
+        <aside class="col-side">
+          <!-- Deux chapeaux : blanc (gentil) et noir (méchant) -->
+          <svg width="230" height="200" viewBox="0 0 230 200" role="img" aria-label="Un chapeau blanc et un chapeau noir">
+            <g transform="translate(8 6)" fill="none" stroke="var(--ink)" stroke-width="4" stroke-linejoin="round">
+              <path d="M20 86 q40 -64 80 0 q22 10 -80 0 Z" fill="var(--surface)"/>
+              <path d="M6 86 q54 26 108 0" />
+            </g>
+            <g transform="translate(96 80)" fill="none" stroke="var(--ink)" stroke-width="4" stroke-linejoin="round">
+              <path d="M20 86 q40 -64 80 0 q22 10 -80 0 Z" fill="var(--ink)"/>
+              <path d="M6 86 q54 26 108 0" />
+            </g>
+          </svg>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. PILLEURS -->
+  <section class="slide" id="h-pilleurs" data-section="01 · Les hackers">
+    <div class="slide-inner">
+      <p class="kicker">Chapeaux noirs</p>
+      <h2 class="slide-title">Les <span class="hl">pilleurs</span> 💰</h2>
+      <div class="cols">
+        <div class="col-main">
+          <div class="callout warm def">
+            <span class="tag">Définition</span>
+            <p>Les <b>pilleurs</b> volent des données et de l'argent : mots de passe, comptes en banque…</p>
+          </div>
+          <div class="stats">
+            <div class="stat"><div class="num">≈ 385 000</div><div class="lbl">attaques en France en 2022</div></div>
+            <div class="stat"><div class="num">≈ 1 050</div><div class="lbl">attaques… par jour&nbsp;!</div></div>
+            <div class="stat"><div class="num">4ᵉ</div><div class="lbl">pays le plus attaqué au monde</div></div>
+          </div>
+          <p class="lead" style="font-size:1rem;margin:.2rem 0 .5rem">Ces attaques viennent surtout de 5 pays (étude 2024)&nbsp;:</p>
+          <div class="countries">
+            <span class="country">🇷🇺 Russie</span>
+            <span class="country">🇺🇦 Ukraine</span>
+            <span class="country">🇨🇳 Chine</span>
+            <span class="country">🇺🇸 USA</span>
+            <span class="country">🇳🇬 Nigéria</span>
+          </div>
+        </div>
+        <aside class="col-side">
+          <div class="sticker">
+            <svg class="scribble" viewBox="0 0 200 200" aria-hidden="true"><path d="M100 18 C150 14 190 55 184 105 C180 150 140 186 96 184 C50 182 14 145 18 98 C22 52 55 22 100 18 Z"/></svg>
+            <span class="emoji" role="img" aria-label="sac d'argent">💰</span>
+            <span class="spark s1">✦</span><span class="spark s2">✦</span><span class="spark s3">✦</span>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. FOUINEURS -->
+  <section class="slide" id="h-fouineurs" data-section="01 · Les hackers">
+    <div class="slide-inner">
+      <p class="kicker">Chapeaux noirs</p>
+      <h2 class="slide-title">Les <span class="hl">fouineurs</span> 🕵️</h2>
+      <div class="cols">
+        <div class="col-main">
+          <div class="callout warm def">
+            <span class="tag">Définition</span>
+            <p>Les <b>fouineurs</b> (ou <b>cyberespions</b>) cherchent à voler des <b>secrets</b> : secrets d'usines, plans militaires, idées d'inventions…</p>
+          </div>
+          <ul class="points">
+            <li>Ils travaillent pour des <b>gouvernements</b> ou des <b>entreprises</b>.</li>
+            <li>Ou bien ils revendent les secrets au <b>marché noir</b> (le marché des choses interdites).</li>
+          </ul>
+        </div>
+        <aside class="col-side">
+          <div class="sticker alt">
+            <svg class="scribble" viewBox="0 0 200 200" aria-hidden="true"><path d="M100 18 C150 14 190 55 184 105 C180 150 140 186 96 184 C50 182 14 145 18 98 C22 52 55 22 100 18 Z"/></svg>
+            <span class="emoji" role="img" aria-label="espion avec une loupe">🕵️</span>
+            <span class="spark s1">✦</span><span class="spark s3">✦</span>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. RANÇONNEURS -->
+  <section class="slide" id="h-rancon" data-section="01 · Les hackers">
+    <div class="slide-inner">
+      <p class="kicker">Chapeaux noirs</p>
+      <h2 class="slide-title">Les <span class="hl">rançonneurs</span> 🔒</h2>
+      <div class="cols">
+        <div class="col-main">
+          <div class="callout warm def">
+            <span class="tag">Définition</span>
+            <p>Les <b>rançonneurs</b> verrouillent tes fichiers importants avec un cadenas secret, puis réclament de l'argent (une <b>rançon</b>) pour les rendre.</p>
+          </div>
+          <p class="fun">C'est un peu comme un kidnapping… mais de données&nbsp;! Et même si on paie, rien ne dit qu'on récupère ses fichiers.</p>
+        </div>
+        <aside class="col-side">
+          <div class="sticker">
+            <svg class="scribble" viewBox="0 0 200 200" aria-hidden="true"><path d="M100 18 C150 14 190 55 184 105 C180 150 140 186 96 184 C50 182 14 145 18 98 C22 52 55 22 100 18 Z"/></svg>
+            <span class="emoji" role="img" aria-label="cadenas fermé">🔒</span>
+            <span class="spark s2">✦</span><span class="spark s3">✦</span>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. MAUVAIS JOUEURS -->
+  <section class="slide" id="h-joueurs" data-section="01 · Les hackers">
+    <div class="slide-inner">
+      <p class="kicker">Chapeaux noirs</p>
+      <h2 class="slide-title">Les <span class="hl">mauvais joueurs</span> 🎮</h2>
+      <div class="cols">
+        <div class="col-main">
+          <div class="callout warm def">
+            <span class="tag">Définition</span>
+            <p>Les <b>mauvais joueurs</b> « craquent » les jeux vidéo pour pouvoir y jouer <b>sans les payer</b>.</p>
+          </div>
+          <p class="fun">Ça prive les créateurs de jeux de leur paie… pas très fair-play&nbsp;! Sans eux, plus de nouveaux jeux.</p>
+        </div>
+        <aside class="col-side">
+          <div class="sticker alt">
+            <svg class="scribble" viewBox="0 0 200 200" aria-hidden="true"><path d="M100 18 C150 14 190 55 184 105 C180 150 140 186 96 184 C50 182 14 145 18 98 C22 52 55 22 100 18 Z"/></svg>
+            <span class="emoji" role="img" aria-label="manette de jeu vidéo">🎮</span>
+            <span class="spark s1">✦</span><span class="spark s2">✦</span>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. CHAPEAUX BLANCS -->
+  <section class="slide" id="h-white" data-section="01 · Les hackers">
+    <div class="slide-inner">
+      <p class="kicker">Les gentils</p>
+      <h2 class="slide-title">Les <span class="hl">chapeaux blancs</span> 🛡️</h2>
+      <div class="cols">
+        <div class="col-main">
+          <div class="callout def">
+            <span class="tag">Définition</span>
+            <p>Les <b>chapeaux blancs</b> (ou <i>white hats</i>) sont les <b>hackers gentils</b>. On les appelle aussi des <b>hackers éthiques</b>.</p>
+          </div>
+          <ul class="points">
+            <li>Ils cherchent les failles pour <b>aider</b> entreprises et gouvernements à mieux se protéger.</li>
+            <li>Ils ne <b>détruisent rien</b> et ne volent rien.</li>
+            <li>Ils sont <b>payés</b> pour leurs rapports : ils expliquent les trous à boucher.</li>
+          </ul>
+          <p class="fun">De vrais héros du numérique&nbsp;! 🦸</p>
+        </div>
+        <aside class="col-side">
+          <div class="sticker">
+            <svg class="scribble" viewBox="0 0 200 200" aria-hidden="true"><path d="M100 18 C150 14 190 55 184 105 C180 150 140 186 96 184 C50 182 14 145 18 98 C22 52 55 22 100 18 Z"/></svg>
+            <span class="emoji" role="img" aria-label="bouclier">🛡️</span>
+            <span class="spark s1">✦</span><span class="spark s3">✦</span>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. DÉMO HACKING (interactive : 4 étapes) -->
+  <section class="slide" id="demo" data-section="01 · Les hackers — Démo" data-steps="4">
+    <div class="demo-inner slide-inner">
+      <p class="demo-hint">🎬 Démonstration (pour de faux&nbsp;!) — appuie sur <b>→</b> pour avancer pas à pas</p>
+      <div class="browser" aria-label="Maquette d'un faux site web, pour la démonstration">
+        <div class="b-bar">
+          <span class="b-dots"><i></i><i></i><i></i></span>
+          <span class="b-nav">←&nbsp;→&nbsp;⟳</span>
+          <span class="addr"><span class="lock">🔒</span><span class="url">https://www.banque-de-france.fr</span></span>
+        </div>
+        <div class="viewport">
+          <!-- Page normale (maquette inventée, ressemblant à un site officiel) -->
+          <div class="page" aria-hidden="true">
+            <div class="tricolore"><i></i><i></i><i></i></div>
+            <div class="page-head">
+              <div class="page-logo">BANQUE DE FRANCE<small>EUROSYSTÈME</small></div>
+              <nav class="page-nav"><span>Accueil</span><span>Économie</span><span>Statistiques</span><span>Espace jeune</span></nav>
+            </div>
+            <div class="page-hero">
+              <h1>Bienvenue à la Banque de France</h1>
+              <p>Comprendre la monnaie, l'économie et protéger ton argent.</p>
+              <span class="page-btn">Découvrir →</span>
+            </div>
+            <div class="page-cards">
+              <div><b>Le saviez-vous ?</b>L'euro est utilisé par 20 pays.</div>
+              <div><b>La monnaie</b>D'où viennent les pièces et les billets ?</div>
+              <div><b>Visiter</b>Découvre nos expositions gratuites.</div>
+            </div>
+          </div>
+          <!-- Écran piraté (apparaît à la dernière étape) -->
+          <div class="hacked-screen" aria-hidden="true">
+            <div class="skull">💀</div>
+            <h2>⚠ CE SITE A ÉTÉ PIRATÉ ⚠</h2>
+            <p>Ses données nous appartiennent maintenant&nbsp;! 😈</p>
+            <p class="small">Payez 1 000 000 € en bitcoins pour les récupérer.</p>
+          </div>
+          <!-- Terminal "hacker" (apparaît à l'étape 2) -->
+          <div class="terminal" data-step="1" aria-hidden="true">
+            <div class="term-head">Terminal — pirate@cm2 : ~</div>
+            <div class="term-body"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. C'EST QUOI LE CODAGE -->
+  <section class="slide" id="c-what" data-section="02 · Le codage">
+    <div class="slide-inner">
+      <p class="kicker">Le codage</p>
+      <h2 class="slide-title">C'est quoi le <span class="hl">codage</span> ?</h2>
+      <div class="cols">
+        <div class="col-main">
+          <div class="callout def">
+            <span class="tag">Définition</span>
+            <p><b>Coder</b> (ou <b>programmer</b>), c'est écrire une suite d'instructions très précises que l'ordinateur va suivre, dans l'ordre, à la lettre.</p>
+          </div>
+          <div class="callout">
+            <p>📋 Un peu comme une <b>recette de cuisine</b> : si tu sautes une étape ou que tu te trompes, le gâteau rate&nbsp;!</p>
+          </div>
+          <ul class="points">
+            <li>Les ordinateurs vont <b>super vite</b>… mais ils ne réfléchissent pas.</li>
+            <li>Il faut donc <b>tout</b> leur expliquer, étape par étape.</li>
+            <li>Sans code : pas de jeux, pas d'applis, pas de sites web, pas de dessins animés en 3D&nbsp;!</li>
+          </ul>
+        </div>
+        <aside class="col-side">
+          <div class="sticker alt">
+            <svg class="scribble" viewBox="0 0 200 200" aria-hidden="true"><path d="M100 18 C150 14 190 55 184 105 C180 150 140 186 96 184 C50 182 14 145 18 98 C22 52 55 22 100 18 Z"/></svg>
+            <span class="emoji" role="img" aria-label="personne qui code sur un ordinateur">👩‍💻</span>
+            <span class="spark s1">✦</span><span class="spark s2">✦</span>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. TYPES DE PROGRAMMES -->
+  <section class="slide" id="c-types" data-section="02 · Le codage">
+    <div class="slide-inner">
+      <p class="kicker">Le codage</p>
+      <h2 class="slide-title">Les grands types de <span class="hl">programmes</span></h2>
+      <div class="cards">
+        <div class="card">
+          <div class="ic">📜</div>
+          <h3>Les scripts</h3>
+          <p>De petits programmes qui font une tâche précise, souvent automatiquement (ex. renommer 100 photos d'un coup).</p>
+        </div>
+        <div class="card">
+          <div class="ic">⚙️</div>
+          <h3>Les services</h3>
+          <p>Ils tournent en arrière-plan, sans qu'on les voie, parfois tout le temps (ex. ce qui livre tes messages).</p>
+        </div>
+        <div class="card">
+          <div class="ic">📱</div>
+          <h3>Les applications</h3>
+          <p>Ce qu'on utilise directement, avec des boutons et des écrans : jeux, appli météo, traitement de texte…</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. LANGAGES -->
+  <section class="slide" id="c-langs" data-section="02 · Le codage">
+    <div class="slide-inner">
+      <p class="kicker">Le codage</p>
+      <h2 class="slide-title">Les grands <span class="hl">langages</span></h2>
+      <div class="cols">
+        <div class="col-main">
+          <p class="lead">Un <b>langage de programmation</b>, c'est la « langue » qu'on parle à l'ordinateur. Il en existe des <b>centaines</b>&nbsp;!</p>
+          <div class="chips">
+            <div class="chip"><span class="code">JavaScript / TypeScript</span> — <b>fait bouger les pages web</b> dans le navigateur.</div>
+            <div class="chip"><span class="code">Java</span> — applis Android, gros logiciels… et même <b>Minecraft</b>&nbsp;!</div>
+            <div class="chip"><span class="code">PHP</span> — fait tourner plein de <b>sites web</b> côté serveur.</div>
+            <div class="chip"><span class="code">Python</span> — facile à lire, parfait pour <b>débuter</b>, l'IA et les sciences.</div>
+          </div>
+        </div>
+        <aside class="col-side">
+          <div class="sticker">
+            <svg class="scribble" viewBox="0 0 200 200" aria-hidden="true"><path d="M100 18 C150 14 190 55 184 105 C180 150 140 186 96 184 C50 182 14 145 18 98 C22 52 55 22 100 18 Z"/></svg>
+            <span class="emoji" role="img" aria-label="bulles de dialogue">💬</span>
+            <span class="spark s1">✦</span><span class="spark s3">✦</span>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11. COMMENT APPREND-ON -->
+  <section class="slide" id="c-learn" data-section="02 · Le codage">
+    <div class="slide-inner">
+      <p class="kicker">Le codage</p>
+      <h2 class="slide-title">Comment <span class="hl">apprend-on</span> à coder ?</h2>
+      <div class="cols">
+        <div class="col-main">
+          <p class="lead">Bonne nouvelle : on peut commencer <b>très jeune</b>, même à ton âge&nbsp;!</p>
+          <ul class="points">
+            <li>🧱 <b>Scratch</b> : on emboîte des blocs colorés, pas besoin d'écrire.</li>
+            <li>🤖 Des <b>jeux</b> et des <b>robots</b> pour apprendre en s'amusant.</li>
+            <li>⌨️ Puis on passe aux « vrais » langages, comme <b>Python</b>.</li>
+          </ul>
+          <div class="callout warm">
+            <p>🔑 Le secret des codeurs : <b>essayer, se tromper, recommencer</b>… encore et encore&nbsp;!</p>
+          </div>
+        </div>
+        <aside class="col-side">
+          <div class="sticker alt">
+            <svg class="scribble" viewBox="0 0 200 200" aria-hidden="true"><path d="M100 18 C150 14 190 55 184 105 C180 150 140 186 96 184 C50 182 14 145 18 98 C22 52 55 22 100 18 Z"/></svg>
+            <span class="emoji" role="img" aria-label="robot">🤖</span>
+            <span class="spark s1">✦</span><span class="spark s2">✦</span>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12. QUIZ — intro -->
+  <section class="slide cover" id="quiz-intro" data-section="03 · Quiz">
+    <div class="cover-inner slide-inner">
+      <h2 class="logo" style="font-size:clamp(2.6rem,11vw,5.5rem)">QUIZ&nbsp;! 🎉</h2>
+      <p class="logo-sub">4 questions — 45 secondes chacune</p>
+      <p class="presenter">À vos méninges&nbsp;! 🧠</p>
+    </div>
+  </section>
+
+  <!-- 13. QUIZ 1 (chapeau blanc) -->
+  <section class="slide quiz" id="quiz1" data-section="03 · Quiz" data-steps="2">
+    <div class="quiz-inner slide-inner">
+      <p class="q-num">Question 1 / 4</p>
+      <div class="timer"><svg class="timer-ring" viewBox="0 0 100 100"><circle class="timer-bg" cx="50" cy="50" r="42"/><circle class="timer-fg" cx="50" cy="50" r="42"/></svg><span class="timer-num">45</span></div>
+      <h2 class="question">Que cherche à faire un « chapeau blanc » ?</h2>
+      <ul class="opts">
+        <li class="opt"><span class="opt-key">A</span> Voler de l'argent <span class="check">✗</span></li>
+        <li class="opt correct"><span class="opt-key">B</span> Aider à mieux protéger les systèmes <span class="check">✔</span></li>
+        <li class="opt"><span class="opt-key">C</span> Casser des jeux vidéo <span class="check">✗</span></li>
+        <li class="opt"><span class="opt-key">D</span> Espionner des pays <span class="check">✗</span></li>
+      </ul>
+      <p class="quiz-bravo">✅ Le chapeau blanc protège — c'est un hacker gentil&nbsp;!</p>
+    </div>
+  </section>
+
+  <!-- 14. QUIZ 2 (langage de programmation) -->
+  <section class="slide quiz" id="quiz2" data-section="03 · Quiz" data-steps="2">
+    <div class="quiz-inner slide-inner">
+      <p class="q-num">Question 2 / 4</p>
+      <div class="timer"><svg class="timer-ring" viewBox="0 0 100 100"><circle class="timer-bg" cx="50" cy="50" r="42"/><circle class="timer-fg" cx="50" cy="50" r="42"/></svg><span class="timer-num">45</span></div>
+      <h2 class="question">Lequel est un langage de programmation ?</h2>
+      <ul class="opts">
+        <li class="opt"><span class="opt-key">A</span> Cobra <span class="check">✗</span></li>
+        <li class="opt"><span class="opt-key">B</span> Girafe <span class="check">✗</span></li>
+        <li class="opt correct"><span class="opt-key">C</span> Python <span class="check">✔</span></li>
+        <li class="opt"><span class="opt-key">D</span> Panthère <span class="check">✗</span></li>
+      </ul>
+      <p class="quiz-bravo">✅ Python — un serpent… et un langage très utilisé&nbsp;!</p>
+    </div>
+  </section>
+
+  <!-- 15. QUIZ 3 (web / navigateur) -->
+  <section class="slide quiz" id="quiz3" data-section="03 · Quiz" data-steps="2">
+    <div class="quiz-inner slide-inner">
+      <p class="q-num">Question 3 / 4</p>
+      <div class="timer"><svg class="timer-ring" viewBox="0 0 100 100"><circle class="timer-bg" cx="50" cy="50" r="42"/><circle class="timer-fg" cx="50" cy="50" r="42"/></svg><span class="timer-num">45</span></div>
+      <h2 class="question">Quel langage fait surtout fonctionner les pages web dans le navigateur ?</h2>
+      <ul class="opts">
+        <li class="opt"><span class="opt-key">A</span> Java <span class="check">✗</span></li>
+        <li class="opt correct"><span class="opt-key">B</span> JavaScript <span class="check">✔</span></li>
+        <li class="opt"><span class="opt-key">C</span> Python <span class="check">✗</span></li>
+        <li class="opt"><span class="opt-key">D</span> PHP <span class="check">✗</span></li>
+      </ul>
+      <p class="quiz-bravo">✅ JavaScript — attention, Java et JavaScript, c'est différent&nbsp;!</p>
+    </div>
+  </section>
+
+  <!-- 16. QUIZ 4 (débuter enfant) -->
+  <section class="slide quiz" id="quiz4" data-section="03 · Quiz" data-steps="2">
+    <div class="quiz-inner slide-inner">
+      <p class="q-num">Question 4 / 4</p>
+      <div class="timer"><svg class="timer-ring" viewBox="0 0 100 100"><circle class="timer-bg" cx="50" cy="50" r="42"/><circle class="timer-fg" cx="50" cy="50" r="42"/></svg><span class="timer-num">45</span></div>
+      <h2 class="question">Pour débuter le code quand on est enfant, on utilise souvent…</h2>
+      <ul class="opts">
+        <li class="opt"><span class="opt-key">A</span> Une calculatrice cassée <span class="check">✗</span></li>
+        <li class="opt"><span class="opt-key">B</span> Un dictionnaire <span class="check">✗</span></li>
+        <li class="opt"><span class="opt-key">C</span> Une règle de 30 cm <span class="check">✗</span></li>
+        <li class="opt correct"><span class="opt-key">D</span> Scratch (des blocs colorés) <span class="check">✔</span></li>
+      </ul>
+      <p class="quiz-bravo">✅ Scratch — on code en emboîtant des blocs&nbsp;!</p>
+    </div>
+  </section>
+
+  <!-- 17. FIN -->
+  <section class="slide cover" id="merci" data-cover data-section="">
+      <svg class="cover-bg" viewBox="0 0 800 450" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
+        <g font-family="monospace" font-weight="700">
+          <text x="40" y="90" font-size="60" transform="rotate(-12 40 90)">&lt;/&gt;</text>
+          <text x="620" y="80" font-size="54">{ }</text>
+          <text x="120" y="320" font-size="70">01</text>
+          <text x="700" y="300" font-size="64">10</text>
+          <text x="320" y="120" font-size="40">return 0</text>
+          <text x="500" y="400" font-size="48">🎉</text>
+          <text x="60" y="420" font-size="48">⌨</text>
+          <text x="380" y="380" font-size="46" transform="rotate(8 380 380)">end()</text>
+        </g>
+      </svg>
+      <div class="cover-inner">
+        <h1 class="logo">Merci&nbsp;!</h1>
+        <p class="logo-sub">Des questions&nbsp;? 🙋</p>
+        <p class="presenter">Un exposé (stylé) de Maxence en CM2&nbsp;B</p>
+        <div class="loader loader--done" aria-hidden="true">
+          <div class="loader-track"><div class="loader-fill"></div></div>
+          <div class="loader-text">TERMINÉ <span class="blink">✔</span></div>
+        </div>
+      </div>
+  </section>
+
+</main>
+
+<script>
+  /* ============================================================
+     MOTEUR DE DIAPOS À "ÉTAPES"
+     Le deck est une liste plate d'étapes. Chaque diapo a un nombre
+     d'étapes = max(data-steps, plus grand data-step enfant + 1, 1).
+     Les éléments [data-step="n"] n'apparaissent qu'à partir de l'étape n.
+     ============================================================ */
+  const deck = document.getElementById("deck");
+  const slides = Array.from(deck.querySelectorAll(".slide"));
+  const deckTag = document.getElementById("deckTag");
+  const progressFill = document.getElementById("progressFill");
+  const themeToggle = document.getElementById("themeToggle");
+
+  // Pré-calcule le nombre d'étapes de chaque diapo.
+  slides.forEach(function (slide) {
+    let maxChild = 0;
+    slide.querySelectorAll("[data-step]").forEach(function (el) {
+      maxChild = Math.max(maxChild, Number(el.dataset.step) || 0);
+    });
+    const declared = Number(slide.dataset.steps) || 0;
+    slide._steps = Math.max(1, declared, maxChild + 1);
+  });
+
+  // Crochets par diapo (effets de bord : frappe du terminal, compte à rebours…).
+  const hooks = {
+    demo: makeDemoHook(),
+    quiz1: makeQuizHook(),
+    quiz2: makeQuizHook(),
+    quiz3: makeQuizHook(),
+    quiz4: makeQuizHook(),
+  };
+
+  let si = 0;   // index de diapo
+  let st = 0;   // étape locale dans la diapo
+  let gen = 0;  // "génération" pour annuler les animations devenues obsolètes
+
+  function next() {
+    const cur = slides[si];
+    if (st < cur._steps - 1) { st++; render(); }
+    else if (si < slides.length - 1) { const prev = si; si++; st = 0; render(prev); }
+  }
+
+  function prev() {
+    if (st > 0) { st--; render(); }
+    else if (si > 0) { const prev = si; si--; st = slides[si]._steps - 1; render(prev); }
+  }
+
+  function home() { const prev = si; si = 0; st = 0; render(prev); }
+  function end() { const prev = si; si = slides.length - 1; st = slides[si]._steps - 1; render(prev); }
+
+  // Affiche l'état courant. prevSi = diapo quittée (pour son crochet onLeave).
+  function render(prevSi) {
+    slides.forEach(function (s, i) { s.classList.toggle("is-active", i === si); });
+    const cur = slides[si];
+
+    // Révèle les éléments dont data-step <= étape courante.
+    cur.querySelectorAll("[data-step]").forEach(function (el) {
+      el.classList.toggle("is-shown", Number(el.dataset.step) <= st);
+    });
+
+    updateChrome(cur);
+
+    // Crochet de la diapo quittée (si on a changé de diapo).
+    if (typeof prevSi === "number" && prevSi !== si) {
+      const ph = hooks[slides[prevSi].id];
+      if (ph && ph.onLeave) ph.onLeave(slides[prevSi]);
+    }
+    // Crochet de la diapo courante (nouvelle génération pour annuler l'ancienne).
+    const h = hooks[cur.id];
+    if (h && h.onStep) h.onStep(st, cur, ++gen);
+
+    syncHash();
+  }
+
+  function updateChrome(cur) {
+    document.body.classList.toggle("is-cover", cur.hasAttribute("data-cover"));
+    deckTag.textContent = cur.dataset.section || "";
+    const total = slides.reduce(function (a, s) { return a + s._steps; }, 0);
+    let g = 0;
+    for (let i = 0; i < si; i++) g += slides[i]._steps;
+    const frac = total > 1 ? (g + st) / (total - 1) : 0;
+    progressFill.style.transform = "scaleX(" + frac + ")";
+  }
+
+  /* ---------- Navigation : clavier, clic, télécommandes ---------- */
+  document.addEventListener("keydown", function (e) {
+    const k = e.key;
+    const jump = e.metaKey || e.ctrlKey; // ⌘ (Mac) ou Ctrl : pour les claviers sans touches Début/Fin
+    // Début / fin : Home/End, ou ⌘↑ / ⌘↓ (équivalents Mac).
+    if (k === "Home" || (jump && k === "ArrowUp")) { e.preventDefault(); home(); return; }
+    if (k === "End" || (jump && k === "ArrowDown")) { e.preventDefault(); end(); return; }
+    if (jump) return; // on ne détourne pas ⌘←/⌘→ (précédent/suivant de l'historique), ⌘R, etc.
+    if (["ArrowRight", "ArrowDown", " ", "Spacebar", "PageDown"].includes(k)) { e.preventDefault(); next(); }
+    else if (["ArrowLeft", "ArrowUp", "PageUp"].includes(k)) { e.preventDefault(); prev(); }
+  });
+
+  // Synchronise l'état avec le hash de l'URL (#diapo[.étape]) — déclenché aussi par Précédent/Suivant du navigateur.
+  window.addEventListener("hashchange", goToHash);
+
+  document.addEventListener("click", function (e) {
+    if (e.target.closest("[data-no-advance]")) return;        // boutons (ex. thème)
+    if (e.target.closest("a")) return;                         // liens éventuels
+    if (window.getSelection && String(window.getSelection())) return; // sélection de texte
+    next();
+  });
+
+  /* ---------- Thème clair / sombre ---------- */
+  const root = document.documentElement;
+  themeToggle.addEventListener("click", function (e) {
+    e.stopPropagation();
+    const t = currentTheme() === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", t);
+    try { localStorage.setItem("hc-theme", t); } catch (_) {}
+    updateThemeIcon();
+    themeToggle.blur();
+  });
+  try {
+    const saved = localStorage.getItem("hc-theme");
+    if (saved) root.setAttribute("data-theme", saved);
+  } catch (_) {}
+  if (window.matchMedia) {
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", updateThemeIcon);
+  }
+  updateThemeIcon();
+
+  // Premier rendu : restaure la diapo depuis le hash de l'URL (pratique après Cmd+R), sinon démarre au début.
+  const start = parseHash();
+  if (start) { si = start.si; st = start.st; }
+  render();
+
+  // ============================================================
+  // == Helpers internes ========================================
+  // ============================================================
+
+  function currentTheme() {
+    return root.getAttribute("data-theme")
+      || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  }
+
+  function updateThemeIcon() {
+    themeToggle.textContent = currentTheme() === "dark" ? "🌙" : "🌞";
+  }
+
+  /* ---------- Hash de l'URL : #diapo[.étape] ----------
+     On ne touche QUE le fragment (#…), jamais le chemin : c'est purement côté client,
+     donc compatible avec n'importe quel hébergement statique (pas de "deep linking" serveur requis). */
+
+  function parseHash() {
+    const raw = decodeURIComponent(location.hash.slice(1)).trim();
+    if (!raw) return null;
+    const parts = raw.split(".");
+    const idx = slides.findIndex(function (s) { return s.id === parts[0]; });
+    if (idx < 0) return null;
+    let step = parseInt(parts[1], 10);
+    if (!(step >= 0)) step = 0;
+    return { si: idx, st: Math.min(step, slides[idx]._steps - 1) };
+  }
+
+  function goToHash() {
+    const t = parseHash();
+    if (!t || (t.si === si && t.st === st)) return; // rien à faire (et évite toute boucle)
+    const prev = si;
+    si = t.si; st = t.st;
+    render(prev);
+  }
+
+  function syncHash() {
+    const hash = "#" + slides[si].id + (st > 0 ? "." + st : "");
+    if (location.hash === hash) return;
+    // replaceState : met à jour le hash sans polluer l'historique. Repli sur location.hash si indisponible (ex. file://).
+    try { history.replaceState(null, "", hash); }
+    catch (_) { location.hash = hash; }
+  }
+
+  /* ---------- Démo de hacking (4 étapes) ---------- */
+
+  // Lignes affichées dans le faux terminal (scénario 100% fictif, pour rire).
+  const HACK_LINES = [
+    { t: "> connexion a www.banque-de-france.fr ..." },
+    { t: "connecte ! (reponse en 42 ms)", cls: "ok", d: 650 },
+    { t: "> recherche d'une porte derobee ..." },
+    { t: "faille trouvee : page /admin mal protegee", cls: "warn", d: 750 },
+    { t: "> essai de mots de passe : 1234 ... azerty ... dedjinou ... motdepasse ..." },
+    { t: "mot de passe trouve : \"123456\"  (oups !)", cls: "ok", d: 700 },
+    { t: "> acces administrateur ACCORDE", cls: "ok", d: 700 },
+    { t: "> remplacement de la page d'accueil ..." },
+    { t: "#### PAGE PIRATEE ! ####", cls: "danger", d: 600 },
+  ];
+
+  function makeDemoHook() {
+    return {
+      onStep: function (local, el, g) {
+        const body = el.querySelector(".term-body");
+        const browser = el.querySelector(".browser");
+        const terminal = el.querySelector(".terminal");
+        if (local < 2) { body.innerHTML = ""; }       // étapes 0-1 : terminal vide
+        if (local === 2) { typeTerminal(body, g); }    // étape 2 : frappe animée
+        if (local >= 3) { fillTerminal(body); browser.classList.add("is-hacked"); }
+        else { browser.classList.remove("is-hacked"); }
+        // Étape "piraté" : le faux terminal s'efface en glissant vers le bas (effet ressort).
+        terminal.classList.toggle("is-leaving", local >= 3);
+      },
+      onLeave: function (el) {
+        gen++; // annule toute frappe en cours
+        el.querySelector(".term-body").innerHTML = "";
+        el.querySelector(".browser").classList.remove("is-hacked");
+        el.querySelector(".terminal").classList.remove("is-leaving");
+      },
+    };
+  }
+
+  // Affiche les lignes une à une, en "tapant" les lignes de commande caractère par caractère.
+  function typeTerminal(body, g) {
+    body.innerHTML = "";
+    let i = 0;
+    function nextLine() {
+      if (g !== gen) return;                 // diapo/étape changée : on annule
+      if (i >= HACK_LINES.length) return;
+      const line = HACK_LINES[i++];
+      const div = document.createElement("div");
+      div.className = "term-line" + (line.cls ? " " + line.cls : "");
+      body.appendChild(div);
+      const pause = line.d || 450;
+      if (line.t.charAt(0) === ">") {
+        div.classList.add("typing");
+        typeChars(div, line.t, 0, g, function () {
+          div.classList.remove("typing");
+          body.scrollTop = body.scrollHeight;
+          window.setTimeout(nextLine, pause);
+        });
+      } else {
+        div.textContent = line.t;
+        body.scrollTop = body.scrollHeight;
+        window.setTimeout(nextLine, pause);
+      }
+    }
+    window.setTimeout(nextLine, 350);
+  }
+
+  function typeChars(div, text, i, g, done) {
+    if (g !== gen) return;
+    if (i > text.length) { done(); return; }
+    div.firstChild ? (div.firstChild.nodeValue = text.slice(0, i)) : div.appendChild(document.createTextNode(text.slice(0, i)));
+    window.setTimeout(function () { typeChars(div, text, i + 1, g, done); }, 28);
+  }
+
+  // Remplit le terminal d'un coup (si on saute à l'étape "page piratée").
+  function fillTerminal(body) {
+    body.innerHTML = "";
+    HACK_LINES.forEach(function (line) {
+      const div = document.createElement("div");
+      div.className = "term-line" + (line.cls ? " " + line.cls : "");
+      div.textContent = line.t;
+      body.appendChild(div);
+    });
+    body.scrollTop = body.scrollHeight;
+  }
+
+  /* ---------- Quiz (2 étapes : question puis réponse) ---------- */
+
+  function makeQuizHook() {
+    return {
+      onStep: function (local, el, g) {
+        if (local === 0) { el.classList.remove("show-answer"); startCountdown(el, g); }
+        else { stopCountdown(el); el.classList.add("show-answer"); }
+      },
+      onLeave: function (el) { stopCountdown(el); el.classList.remove("show-answer"); resetCountdown(el); },
+    };
+  }
+
+  function startCountdown(el, g) {
+    const ring = el.querySelector(".timer-fg");
+    const num = el.querySelector(".timer-num");
+    const C = ring._C || (ring._C = 2 * Math.PI * ring.r.baseVal.value);
+
+    // Réinitialise l'anneau plein, puis le vide en 45 s (transition CSS linéaire).
+    ring.style.transition = "none";
+    ring.style.strokeDasharray = C;
+    ring.style.strokeDashoffset = "0";
+    num.textContent = "45";
+    el._sec = 45;
+    void ring.getBoundingClientRect(); // force le reflow avant d'animer
+    ring.style.transition = "stroke-dashoffset 45s linear";
+    ring.style.strokeDashoffset = String(C);
+
+    window.clearInterval(el._int);
+    el._int = window.setInterval(function () {
+      el._sec--;
+      num.textContent = String(Math.max(0, el._sec));
+      if (el._sec <= 0) window.clearInterval(el._int);
+    }, 1000);
+
+    window.clearTimeout(el._to);
+    el._to = window.setTimeout(function () {
+      if (g === gen) next(); // révèle la réponse seulement si on est toujours là
+    }, 45000);
+  }
+
+  function stopCountdown(el) {
+    window.clearInterval(el._int);
+    window.clearTimeout(el._to);
+    const ring = el.querySelector(".timer-fg");
+    if (ring) {
+      const cur = window.getComputedStyle(ring).strokeDashoffset; // fige l'anneau là où il est
+      ring.style.transition = "none";
+      ring.style.strokeDashoffset = cur;
+    }
+  }
+
+  function resetCountdown(el) {
+    const ring = el.querySelector(".timer-fg");
+    const num = el.querySelector(".timer-num");
+    if (ring) { ring.style.transition = "none"; ring.style.strokeDashoffset = "0"; }
+    if (num) num.textContent = "45";
+  }
+</script>
